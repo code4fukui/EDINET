@@ -1,0 +1,28 @@
+name: Scheduled fetch
+
+on:
+  schedule:
+    # 毎日17:18分に実行 (UTC=JST-9)
+    - cron: '18 8 * * *'
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
+      - name: fetch
+        run: |
+          deno run -A download-today.js
+          deno run -A chk.js
+          deno run -A download-edinetcode.js
+      - name: commit and push
+        run: |
+          git config --global user.email "workflow@example.com"
+          git config --global user.name "workflow user"
+          git add .
+          git commit -m 'update data' && git push ${REPO} HEAD:${{github.event.pull_request.head.ref}} || true
+          git push
