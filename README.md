@@ -4,5 +4,5 @@
 
 - [日別文書一覧](data/documents)
 - [EDINETコード一覧](data/edinetcode.csv)
-- [上場企業一覧](data/seccode.csv)
+- [上場企業一覧](data/seccode.csv) （[アプリ](https://code4fukui.github.io/EDINET/seccode.html))
 
