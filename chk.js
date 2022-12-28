@@ -14,7 +14,9 @@ const end = new Day();
 const users = {};
 for (let d = start; !d.isAfter(end); d = d.nextDay()) {
   //console.log(d);
-  const data = await CSV.fetchJSON("data/documents/" + d.toString() + ".csv");
+  const fn = "data/documents/" + d.toString() + ".csv";
+  console.log(fn);
+  const data = await CSV.fetchJSON(fn);
   //console.log(data);
   data.forEach(d => {
     if (!d.edinetCode) {
