@@ -1,0 +1,285 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="icon" href="data:">
+<title>東証上場企業ダッシュボード</title>
+<meta property="og:title" content="東証上場企業ダッシュボード">
+<meta name="format-detection" content="telephone=no"/>
+<script type="module">
+import { CSV } from "https://js.sabae.cc/CSV.js";
+import { ArrayUtil } from "https://js.sabae.cc/ArrayUtil.js";
+import { encodeHTML } from "https://js.sabae.cc/encodeHTML.js";
+import tabularmaps from "https://code4fukui.github.io/gBizINFO/tabularmapsjapan.js";
+import { JAPAN_PREF, JAPAN_PREF_EN } from "https://js.sabae.cc/JAPAN_PREF.js";
+import { getPrefCity } from "./getPrefCity.js";
+
+const convertJapanEn2Ja = (en) => {
+	return JAPAN_PREF[JAPAN_PREF_EN.indexOf(en)];
+};
+
+const show = async () => {
+  console.log("s")
+  const data0 = await CSV.fetchJSON("./data/list.csv");
+  console.log(data0)
+  // 日付,コード,銘柄名,市場・商品区分,33業種コード,33業種区分,17業種コード,17業種区分,規模コード,規模区分,JCN,法人番号,住所,法人名,法人名(カナ),更新日時,企業ホームページ,事業概要,従業員数,代表者名,特許情報
+  const data = data0.filter(d => d.住所);
+  data.forEach(d => {
+    const pc = getPrefCity(d.住所);
+    d.pref = pc.pref;
+    d.city = pc.city;
+    console.log(pc)
+  });
+  console.log(data0.length, "->", data.length);
+
+  const prefs = {};
+  for (const d of data) {
+    const p = prefs[d.pref];
+    if (p) {
+      p.push(d);
+    } else {
+      prefs[d.pref] = [d];
+    }
+  }
+  const showunit = "社";
+
+  //const showname = sel.value;
+  const getKPI = (pname, cname) => {
+    if (pname == "日本") {
+      const p = prefs[cname];
+      const unit = showunit;
+      if (!p) {
+        return 0;
+      }
+      return p.length;
+    } else {
+      const p = prefs[pname];
+      const unit = showunit;
+      if (!p) {
+        return 0;
+      }
+      const cityMatch = (s1, s2) => s1.startsWith(s2) || s1.endsWith(s2);
+      const kpi = p.filter(d => cityMatch(d.city, cname)).length;
+      return kpi;
+    }
+  };
+  const colorTabularMaps = (pname, tmap) => {
+    let min = 100000;
+    let max = -min;
+    
+    for (const c of tmap.children) {
+      const cname = c.cellname;
+      if (cname !== "-") {
+        const kpi = getKPI(pname, cname);
+        if (isNaN(kpi)) continue;
+        if (kpi < min) min = kpi;
+        if (kpi > max) max = kpi;
+      }
+    }
+    max = 100;
+
+    for (const c of tmap.children) {
+      const cname = c.cellname;
+      if (cname !== "-") {
+        const kpi = getKPI(pname, cname);
+        if (isNaN(kpi)) {
+          continue;
+        }
+        //const n = (parseFloat(kpi) - min) / (max - min);
+        if (kpi == 0) {
+          c.style.backgroundColor = "white";
+          c.style.color = "black";
+        } else if (kpi > 0) {
+          const n = kpi > max ? 1 : parseFloat(kpi) / max;
+          const h = 7;
+          const s = 80;
+          const l = 95 - n * 50;
+          const col = `hsl(${h},${s}%,${l}%)`;
+          //const col = `rgba(200,50,50,${l / 100 * .5})`;
+          c.style.backgroundColor = col;
+          c.style.color = l > 70 ? "black" : "white";
+        }
+          /*
+        } else if (kpi < 0) {
+          const n = parseFloat(kpi) / min;
+          const h = 220;
+          const s = 50;
+          const l = 95 - n * 40;
+          const col = `hsl(${h},${s}%,${l}%)`;
+          //const col = `rgba(200,50,50,${l / 100 * .5})`;
+          c.style.backgroundColor = col;
+          c.style.color = l > 70 ? "black" : "white";
+        }
+        */
+      }
+    }
+  };
+  const showDetail = (cname) => {
+    let p = null;
+    if (!cname) {
+      p = data;
+      cname = "全国";
+    } else {
+      p = prefs[cname];
+      if (!p) {
+        p = [];
+      }
+    }
+    const n = p.length;
+    const add = (p) => {
+      const child = cname == "全国" ? "pref" : "city";
+
+      const cities0 = ArrayUtil.toUnique(p.map(d => d[child]));
+      console.log(cities0, p, cname, cname)
+      const cnts = cities0.map(c => ({ name: c, cnt: p.filter(p => p[child] == c).length }));
+      cnts.sort((a, b) => b.cnt - a.cnt);
+      const cities = cnts.map(c => c.name);
+
+      const pp = [];
+      for (const c of cities) {
+        const p2 = p.filter(p => p[child] == c);
+        const html = `<h3>${c} ${p2.length}社</h3>` + p2.map(d => {
+          return { name: encodeHTML(d.法人名), city: encodeHTML(d[child]) }
+        }).map(({ name, city }) => `<a href="https://www.google.com/search?q=${name}">${name}(${city})</a>`).join(", ");
+        pp.push(html);
+      }
+      return pp.join("");
+    }
+    const head = `<h3>${cname}の東証上場企業${n}社</h3>`;
+    detail.innerHTML = head + add(p);
+  };
+  const setCellContent = (c, pname, cname) => {
+    c.textContent = "";
+    const cr = tag => document.createElement(tag);
+    const div = cr("div");
+    div.className = "name";
+    div.textContent = cname;
+    c.appendChild(div);
+    const div2 = cr("div");
+    div2.className = "val";
+    const kpi = getKPI(pname, cname);
+    div2.innerHTML = `<span class=num>${kpi}社</span>`;
+    c.appendChild(div2);
+    if (pname == "日本") {
+      c.onclick = () => {
+        showDetail(cname);
+      };
+    }
+  };
+  tabularmaps.showJapan(setCellContent, colorTabularMaps, false);
+
+  const pname = convertJapanEn2Ja(document.location.hash.substring(1));
+  showDetail(pname);
+};
+
+await show();
+
+</script>
+<style>
+body {
+	font-family: sans-serif;
+	text-align: center;
+	margin: 0;
+	padding: 0;
+}
+h1 {
+	margin: 0;
+	font-size: 5vw;
+	padding: 2vw 0;
+  margin-bottom: 1vw;
+	background-color: #ff5959;
+	color: white;
+}
+h3 {
+	padding: .2em 0;
+	margin: 0;
+}
+#back {
+	margin: .5em;
+}
+.sub {
+	font-size: 83%;
+	display: inline-block;
+	background-color: white;
+	padding: 0 .3em;
+}
+.name {
+	font-size: min(2.5vw, 20px);
+}
+.num {
+	font-weight: bold;
+}
+.created {
+	color: #fd3a3a;
+}
+.terminated {
+	color:#718ab2;
+}
+/* tabularmaps */
+#tmapc {
+	max-width: 800px;
+	margin: 0 auto;
+}
+#tmapc > div > span {
+	font-size: min(1.5vw, 15px);
+	align-items: center;
+	justify-content: center;
+	border-radius: .5vw;
+	border: .1vw solid #333;
+	padding: .1vw .1vw;
+	margin: .2vw;
+}
+/* other */
+select {
+	font-size: 20px;
+	margin: 0 0 .5em 0;
+}
+#detail {
+	text-align: left;
+	padding: .3em;
+	font-size: 90%;
+	overflow: scroll;
+	display: inline-block;
+	border: 1px solid gray;
+	width: 90vw;
+	max-width: 700px;
+	height: 10em;
+}
+/* credit */
+.credit {
+	margin: 20px;
+	text-align: center;
+	font-size: 80%;
+}
+a {
+	color: #666 !important;
+}
+.links {
+	margin: 0;
+	margin-bottom: 1em;
+	x-background-color: #fd3a3a;
+	background-color: #ff6969;
+}
+.links a {
+	display: inline-block;
+	padding: .3em;
+	margin: 0.1 1em;
+	color: white !important;
+	text-decoration: none;
+}
+</style>
+</head>
+<body>
+
+<h1>東証上場企業ダッシュボード <span id=tmtitle></span></h1>
+
+<div id="tmapc"></div>
+<button id="back">戻る</button><br>
+<div id=lastUpdate>更新日: 2023-10-30</div>
+<div id="detail"></div>
+
+
+<div class="credit">
+DATA: <a href="https://disclosure2.edinet-fsa.go.jp/WEEK0010.aspx">EDINET</a>, <a href="https://www.houjin-bangou.nta.go.jp/">国税庁法人番号公表サイト</a><br>
+LAYOUT: <a href=https://www.stopcovid19.jp/tabularmapsjapan.csv>TabularMaps Japan - 日本カラム地図 CSV</a> CC0 <a href=https://github.com/tabularmaps/hq>カラム地図 / TabularMaps on Github</a><br>
+<a href=https://github.com/code4fukui/EDINET/>data and src on GitHub</a><br>
+</div>
+
+</body>
+</html>
