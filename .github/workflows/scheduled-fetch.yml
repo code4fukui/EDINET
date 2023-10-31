@@ -15,10 +15,13 @@ jobs:
         with:
           deno-version: v1.x
       - name: fetch
+        env:
+          EDINET_API_KEY: ${{ secrets.EDINET_API_KEY }}
+          GBIZ_ACCESS_TOKEN: ${{ secrets.GBIZ_ACCESS_TOKEN }}
         run: |
           deno run -A download-today.js
-          deno run -A chk.js
-          deno run -A download-edinetcode.js
+          # deno run -A chk.js
+          # deno run -A download-edinetcode.js
       - name: commit and push
         run: |
           git config --global user.email "workflow@example.com"
