@@ -4,8 +4,10 @@
 
 - [日別文書一覧](data/documents)
 - [EDINETコード一覧](data/edinetcode.csv)
-- [上場企業一覧](data/seccode.csv) （[アプリ](https://code4fukui.github.io/EDINET/seccode.html))
+- [東証上場企業ダッシュボード](https://code4fukui.github.io/EDINET/)
+- [東証上場企業一覧](data/seccode.csv) （[アプリ](https://code4fukui.github.io/EDINET/seccode.html))
 
 ## 出典
 
-出典：EDINET閲覧（提出）サイト（[https://disclosure.edinet-fsa.go.jp/](https://disclosure.edinet-fsa.go.jp/)）
+- [EDINETタクソノミ及びコードリストダウンロード](https://disclosure2.edinet-fsa.go.jp/weee0010.aspx)
+- [東証上場銘柄一覧（2023年9月末） - その他統計資料 | 日本取引所グループ](https://www.jpx.co.jp/markets/statistics-equities/misc/01.html)
