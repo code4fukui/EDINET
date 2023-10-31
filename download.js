@@ -1,3 +1,4 @@
+import { getEnv } from "https://js.sabae.cc/getEnv.js";
 import { CSV } from "https://js.sabae.cc/CSV.js";
 
 // JCN = 法人番号
@@ -38,10 +39,12 @@ attachDocFlag 書類に代替書面・添付文書がある場合は"1"、それ
 englishDocFlag 書類に英文ファイルがある場合は "1"、それ以外は"0"
 */
 
+const API_KEY = await getEnv("EDINET_API_KEY");
+
 export const download = async (dt) => {
-  const base = "https://disclosure.edinet-fsa.go.jp/api/v1/documents.json?type=2&date=";
-  const url = base + dt;
-  console.log(url);
+  const base = "https://api.edinet-fsa.go.jp/api/v2/documents.json?type=2&date=";
+  const url = base + dt + "&Subscription-Key=" + API_KEY;
+  //console.log(url);
   const data = await (await fetch(url)).json();
   //await Deno.writeTextFile("data/" + dt + ".json", JSON.stringify(data, null, 2));
   //const data = JSON.parse(await Deno.readTextFile("data/" + dt + ".json"));

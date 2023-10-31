@@ -1,3 +1,5 @@
+// not yet
+
 export const downloadDoc = async (code) => {
   const base = "https://disclosure.edinet-fsa.go.jp/api/v1/documents/";
   const url = base + code + "?type=1";
