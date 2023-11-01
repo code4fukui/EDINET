@@ -7,6 +7,10 @@
 - [東証上場企業ダッシュボード](https://code4fukui.github.io/EDINET/)
 - [東証上場企業一覧](data/seccode.csv) （[アプリ](https://code4fukui.github.io/EDINET/seccode.html))
 
+## 関連
+
+- [gBizINFO](https://github.com/code4fukui/gBizINFO/)
+
 ## 出典
 
 - [EDINET](https://disclosure2dl.edinet-fsa.go.jp/guide/static/disclosure/WZEK0110.html)
