@@ -135,8 +135,8 @@ const show = async () => {
       for (const c of cities) {
         const p2 = p.filter(p => p[child] == c);
         const html = `<h3>${c} ${p2.length}社</h3>` + p2.map(d => {
-          return { name: encodeHTML(d.法人名), city: encodeHTML(d[child]) }
-        }).map(({ name, city }) => `<a href="https://www.google.com/search?q=${name}">${name}(${city})</a>`).join(", ");
+          return { name: encodeHTML(d.法人名), seccode: d.コード }
+        }).map(({ name, seccode }) => `<a href="https://www.google.com/search?q=${name}">${name}(<a href="https://finance.yahoo.co.jp/quote/${seccode}.T">${seccode}</a>)</a>`).join(", ");
         pp.push(html);
       }
       return pp.join("");
