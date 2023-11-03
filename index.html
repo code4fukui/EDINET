@@ -15,18 +15,8 @@ const convertJapanEn2Ja = (en) => {
 };
 
 const show = async () => {
-  console.log("s")
-  const data0 = await CSV.fetchJSON("./data/list.csv");
-  console.log(data0)
-  // 日付,コード,銘柄名,市場・商品区分,33業種コード,33業種区分,17業種コード,17業種区分,規模コード,規模区分,JCN,法人番号,住所,法人名,法人名(カナ),更新日時,企業ホームページ,事業概要,従業員数,代表者名,特許情報
-  const data = data0.filter(d => d.住所);
-  data.forEach(d => {
-    const pc = getPrefCity(d.住所);
-    d.pref = pc.pref;
-    d.city = pc.city;
-    console.log(pc)
-  });
-  console.log(data0.length, "->", data.length);
+  const data = await CSV.fetchJSON("./data/list_with_marketcap.csv");
+  console.log(data.length); // old 3805 -> 3813
 
   const prefs = {};
   for (const d of data) {
@@ -135,7 +125,7 @@ const show = async () => {
       for (const c of cities) {
         const p2 = p.filter(p => p[child] == c);
         const html = `<h3>${c} ${p2.length}社</h3>` + p2.map(d => {
-          return { name: encodeHTML(d.法人名), seccode: d.コード }
+          return { name: encodeHTML(d.name), seccode: d.seccode }
         }).map(({ name, seccode }) => `<a href="https://www.google.com/search?q=${name}">${name}(<a href="https://finance.yahoo.co.jp/quote/${seccode}.T">${seccode}</a>)</a>`).join(", ");
         pp.push(html);
       }
