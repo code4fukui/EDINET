@@ -10,27 +10,27 @@ export const fixBigNum = (n, mega = false) => {
   } else if (n < 100000) {
     return Num.fixfloat(n / 10000, 2) + units[1];
   } else if (n < 1000000) {
-    return Num.fixfloat(n / 10000, 2) + units[1];
-  } else if (n < 10000000) {
     return Num.fixfloat(n / 10000, 1) + units[1];
+  } else if (n < 10000000) {
+    return Num.fixfloat(n / 10000, 0) + units[1];
   } else if (n < 100000000) {
     //return Math.floor(n / 10000) + units[1]; // 1000億
     return Num.fixfloat(n / 10000 / 10000, 2) + units[2]; // 0.10兆
   } else if (n < 1000000000) {
     return Num.fixfloat(n / 10000 / 10000, 2) + units[2];
   } else if (n < 10000000000) {
-    return Num.fixfloat(n / 10000 / 10000, 2) + units[2];
-  } else if (n < 100000000000) {
     return Num.fixfloat(n / 10000 / 10000, 1) + units[2];
+  } else if (n < 100000000000) {
+    return Num.fixfloat(n / 10000 / 10000, 0) + units[2];
   } else if (n < 1000000000000) {
     //return Math.floor(n / 10000 / 10000) + units[2];
     return Num.fixfloat(n / 10000 / 10000 / 10000, 2) + units[3];
   } else if (n < 10000000000000) {
     return Num.fixfloat(n / 10000 / 10000 / 10000, 2) + units[3];
   } else if (n < 100000000000000) {
-    return Num.fixfloat(n / 10000 / 10000 / 10000, 2) + units[3];
-  } else if (n < 1000000000000000) {
     return Num.fixfloat(n / 10000 / 10000 / 10000, 1) + units[3];
+  } else if (n < 1000000000000000) {
+    return Num.fixfloat(n / 10000 / 10000 / 10000, 0) + units[3];
   } else {
     return Math.floor(n / 10000 / 10000 / 10000) + units[3];
   }
