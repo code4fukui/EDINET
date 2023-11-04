@@ -9,6 +9,7 @@ import { encodeHTML } from "https://js.sabae.cc/encodeHTML.js";
 import tabularmaps from "https://code4fukui.github.io/gBizINFO/tabularmapsjapan.js";
 import { JAPAN_PREF, JAPAN_PREF_EN } from "https://js.sabae.cc/JAPAN_PREF.js";
 import { Num } from "https://js.sabae.cc/Num.js";
+import { setSelectMarket, markets, setSelectIndustry, industry17 } from "./setSelect.js";
 
 const convertJapanEn2Ja = (en) => {
 	return JAPAN_PREF[JAPAN_PREF_EN.indexOf(en)];
@@ -31,31 +32,9 @@ const sumMarketCap = (list) => {
   return sum;
 };
 
-const markets = {
-  all: "全市場",
-  P: "プライム",
-  S: "スタンダード",
-  G: "グロース",
-};
-for (const name in markets) {
-  const opt = document.createElement("option");
-  opt.value = name;
-  opt.textContent = markets[name];
-  selmarket.appendChild(opt);
-}
 
-const industry17 = await CSV.fetchJSON("./data/industry17.csv");
-// type,name
-const opt = document.createElement("option");
-opt.value = "all";
-opt.textContent = "全産業";
-selindustry.appendChild(opt);
-for (const i of industry17) {
-  const opt = document.createElement("option");
-  opt.value = i.type;
-  opt.textContent = i.name;
-  selindustry.appendChild(opt);
-}
+setSelectMarket(selmarket);
+setSelectIndustry(selindustry);
 
 const show = async () => {
   const data = await CSV.fetchJSON("./data/list_with_marketcap.csv");
@@ -322,18 +301,21 @@ a {
 	text-decoration: none;
 }
 </style>
+<link rel="stylesheet" href="banner.css">
 </head>
 <body>
 
 <h1>東証上場企業ダッシュボード <span id=tmtitle></span></h1>
 
+<select id="selindustry"></select>
 <select id="selmarket"></select>
-<select id="selindustry"></select><br>
+<br>
 <div id="tmapc"></div>
 <button id="back">戻る</button><br>
 <div id=lastUpdate>更新日: 2023-11-04</div>
 <div id="detail"></div>
 
+<a class="banner" href=./piechart.html>東証時価総額を円グラフで見る</a>
 
 <div class="credit">
 DATA: <a href="https://disclosure2.edinet-fsa.go.jp/WEEK0010.aspx">EDINET</a>, <a href="https://www.houjin-bangou.nta.go.jp/">国税庁法人番号公表サイト</a><br>
