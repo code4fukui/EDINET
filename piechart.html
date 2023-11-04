@@ -1,0 +1,189 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="icon" href="data:">
+<title>東証時価総額ダッシュボード</title>
+</head>
+<body>
+
+<h1>東証時価総額ダッシュボード</h1>
+
+<select id="selpref"></select>
+<select id="selindustry"></select>
+<select id="selmarket"></select>
+<br>
+
+<div class=piechart>
+	<canvas id="canvas"></canvas>
+	<div class="tbl" id="tbl"></div>
+</div>
+<div class=piechart>
+	<canvas id="canvas2"></canvas>
+	<div class="tbl" id="tbl2"></div>
+</div>
+
+<div id=lastUpdate>更新日: 2023-11-04</div>
+
+<link rel="stylesheet" href="banner.css">
+<a class="banner" href=./>東証上場企業をカラム地図で見る</a>
+
+<div id="credit">
+DATA: <a href="https://disclosure2.edinet-fsa.go.jp/WEEK0010.aspx">EDINET</a>, <a href="https://www.houjin-bangou.nta.go.jp/">国税庁法人番号公表サイト</a><br>
+Lib: <a href=https://github.com/code4fukui/piechart/>piechart</a><br>
+<a href=https://github.com/code4fukui/EDINET/>data and src on GitHub</a><br>
+</div>
+
+<script type="module">
+import { CSV } from "https://js.sabae.cc/CSV.js";
+//import { showPieChart } from "./showPieChart.js";
+import { showPieChart } from "https://code4fukui.github.io/piechart/showPieChart.js";
+import { setSelectMarket, markets, setSelectIndustry, industry17, setSelectPref } from "./setSelect.js";
+
+setSelectPref(selpref);
+setSelectMarket(selmarket);
+setSelectIndustry(selindustry);
+
+const calcAll = (list, pref = true) => {
+	const res = {};
+	for (const i of list) {
+		const name = i.name.replace(/株式会社/, "") + " (" + (pref ? i.pref : i.city) + ")";
+		res[name] = i.marketcap_m;
+	}
+	return res;
+};
+const calcPref = (list) => {
+	const res = {};
+	for (const i of list) {
+		if (!res[i.pref]) {
+			res[i.pref] = 0;
+		}
+		res[i.pref] += i.marketcap_m;
+	}
+	return res;
+};
+const calcCity = (list, pref) => {
+	const res = {};
+	for (const i of list) {
+		if (!res[i.city]) {
+			res[i.city] = 0;
+		}
+		res[i.city] += i.marketcap_m;
+	}
+	return res;
+};
+
+const url = "./data/list_with_marketcap.csv";
+const list = await CSV.fetchJSON(url);
+list.forEach(i => {
+	i.marketcap_m = parseInt(i.marketcap_m)
+});
+const unit = "百万円";
+
+const getData = () => {
+	return list.filter(i => {
+		if (selpref.value != "all" && i.pref != selpref.value) {
+			return false;
+		} else if (selmarket.value != "all" && i.market != selmarket.value) {
+			return false;
+		} else if (selindustry.value != "all" && i.type != selindustry.value) {
+			return false;
+		}
+		return true;
+	});
+};
+const show = () => {
+	const data = getData();
+	const prefmode = selpref.value == "all";
+	showPieChart(canvas, tbl, calcAll(data, prefmode), unit);
+	showPieChart(canvas2, tbl2, prefmode ? calcPref(data) : calcCity(data), unit);
+};
+
+show();
+[selpref, selmarket, selindustry].forEach(i => i.oninput = () => show());
+
+</script>
+<style>
+body {
+	font-family: sans-serif;
+	text-align: center;
+	margin: 0;
+	padding: 0;
+}
+h1 {
+	margin: 0;
+	font-size: 4vw;
+	padding: 2vw 0;
+  margin-bottom: 1vw;
+	background-color: #ff5959;
+	color: white;
+}
+.piechart {
+	display: inline-block;
+	margin: 1em;
+}
+canvas {
+	display: inline-block;
+	width: 400px;
+	height: 400px;
+}
+.tbl {
+	margin-top: 1em;
+	display: inline-block;
+	vertical-align: top;
+}
+.tbl table td:first-child {
+	text-align: left;
+}
+table {
+	border-collapse: collapse;
+	display: inline-block;
+	text-align: right;
+}
+td {
+	font-size: 70%;
+	border: 1px solid #444;
+	padding: 2px;
+	x-white-space: nowrap;
+	word-break: break-all;
+}
+select {
+	font-size: 16px;
+}
+#credit a {
+	color: gray !important;
+	text-decoration: none;
+}
+#credit {
+	margin-top: 1em;
+	font-size: 80%;
+}
+#head {
+	font-size: 80%;
+	margin-bottom: .5em;
+}
+#head a {
+	color: gray !important;
+	text-decoration: none;
+}
+#title {
+	margin-top: 1em;
+}
+
+button {
+	margin: 3px;
+	background-color: white;
+}
+@media screen and (max-width: 440px) {
+	.piechart {
+		margin: 0;
+	}
+	canvas {
+		display: inline-block;
+		width: 360px;
+		height: 360px;
+	}
+}
+#credit {
+	margin-top: 1em;
+}
+</style>
+
+</body>
+</html>

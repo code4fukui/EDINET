@@ -1,0 +1,11 @@
+.banner {
+  display: block;
+  margin: .8em auto;
+  width: 20em;
+  font-size: 16px;
+  padding: .5em 1em;
+  background-color: #ff6969;
+  color: white !important;
+  text-decoration: none;
+  border: 2px outset #ffdddd;
+}
