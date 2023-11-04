@@ -9,9 +9,28 @@ import { encodeHTML } from "https://js.sabae.cc/encodeHTML.js";
 import tabularmaps from "https://code4fukui.github.io/gBizINFO/tabularmapsjapan.js";
 import { JAPAN_PREF, JAPAN_PREF_EN } from "https://js.sabae.cc/JAPAN_PREF.js";
 import { getPrefCity } from "./getPrefCity.js";
+import { Num } from "https://js.sabae.cc/Num.js";
+import { fixBigNum } from "./fixBigNum.js";
 
 const convertJapanEn2Ja = (en) => {
 	return JAPAN_PREF[JAPAN_PREF_EN.indexOf(en)];
+};
+
+const fixMarketCap = (yen_m) => fixBigNum(yen_m, true) + "円";
+
+const sumMarketCap = (list) => {
+  const sum = list.reduce((pre, i) => pre + parseInt(i.marketcap_m), 0);
+  /*
+  let sum = 0;
+  for (const i of list) {
+    const n = parseInt(i.marketcap_m);
+    if (isNaN(n)) {
+      console.log(n, i.marketcap_m);
+    }
+    sum += n;
+  }
+  */
+  return fixMarketCap(sum);
 };
 
 const show = async () => {
@@ -35,18 +54,20 @@ const show = async () => {
       const p = prefs[cname];
       const unit = showunit;
       if (!p) {
-        return 0;
+        return { kpi: 0, mcap: "" };
       }
-      return p.length;
+      return { kpi: p.length, mcap: sumMarketCap(p) };
     } else {
       const p = prefs[pname];
       const unit = showunit;
       if (!p) {
-        return 0;
+        return { kpi: 0, mcap: "" };
       }
       const cityMatch = (s1, s2) => s1.startsWith(s2) || s1.endsWith(s2);
-      const kpi = p.filter(d => cityMatch(d.city, cname)).length;
-      return kpi;
+      const list = p.filter(d => cityMatch(d.city, cname));
+      const kpi = list.length;
+      const mcap = sumMarketCap(list);
+      return { kpi, mcap };
     }
   };
   const colorTabularMaps = (pname, tmap) => {
@@ -56,7 +77,7 @@ const show = async () => {
     for (const c of tmap.children) {
       const cname = c.cellname;
       if (cname !== "-") {
-        const kpi = getKPI(pname, cname);
+        const { kpi } = getKPI(pname, cname);
         if (isNaN(kpi)) continue;
         if (kpi < min) min = kpi;
         if (kpi > max) max = kpi;
@@ -67,7 +88,7 @@ const show = async () => {
     for (const c of tmap.children) {
       const cname = c.cellname;
       if (cname !== "-") {
-        const kpi = getKPI(pname, cname);
+        const { kpi } = getKPI(pname, cname);
         if (isNaN(kpi)) {
           continue;
         }
@@ -116,22 +137,21 @@ const show = async () => {
       const child = cname == "全国" ? "pref" : "city";
 
       const cities0 = ArrayUtil.toUnique(p.map(d => d[child]));
-      console.log(cities0, p, cname, cname)
       const cnts = cities0.map(c => ({ name: c, cnt: p.filter(p => p[child] == c).length }));
       cnts.sort((a, b) => b.cnt - a.cnt);
       const cities = cnts.map(c => c.name);
 
       const pp = [];
       for (const c of cities) {
-        const p2 = p.filter(p => p[child] == c);
+        const p2 = p.filter(p => p[child] == c).sort((a, b) => b.marketcap_m - a.marketcap_m);
         const html = `<h3>${c} ${p2.length}社</h3>` + p2.map(d => {
-          return { name: encodeHTML(d.name), seccode: d.seccode }
-        }).map(({ name, seccode }) => `<a href="https://www.google.com/search?q=${name}">${name}(<a href="https://finance.yahoo.co.jp/quote/${seccode}.T">${seccode}</a>)</a>`).join(", ");
+          return { name: encodeHTML(d.name), seccode: d.seccode, mcap: d.marketcap_m }
+        }).map(({ name, seccode, mcap }) => `<a href="https://www.google.com/search?q=${name}">${name}(<a href="https://finance.yahoo.co.jp/quote/${seccode}.T">${seccode}</a>) ${fixMarketCap(mcap)}</a>`).join("<br>");
         pp.push(html);
       }
       return pp.join("");
     }
-    const head = `<h3>${cname}の東証上場企業${n}社</h3>`;
+    const head = `<h3>${cname}の東証上場企業${n}社 時価総額合計${sumMarketCap(p)}</h3>`;
     detail.innerHTML = head + add(p);
   };
   const setCellContent = (c, pname, cname) => {
@@ -143,8 +163,8 @@ const show = async () => {
     c.appendChild(div);
     const div2 = cr("div");
     div2.className = "val";
-    const kpi = getKPI(pname, cname);
-    div2.innerHTML = `<span class=num>${kpi}社</span>`;
+    const { kpi, mcap } = getKPI(pname, cname);
+    div2.innerHTML = `<span class=num>${kpi}社</span><br><span class=num2>${mcap}</span>`;
     c.appendChild(div2);
     if (pname == "日本") {
       c.onclick = () => {
@@ -261,7 +281,7 @@ a {
 
 <div id="tmapc"></div>
 <button id="back">戻る</button><br>
-<div id=lastUpdate>更新日: 2023-10-30</div>
+<div id=lastUpdate>更新日: 2023-11-04</div>
 <div id="detail"></div>
 
 
