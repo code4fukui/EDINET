@@ -47,6 +47,7 @@ for (const name in markets) {
 }
 
 const industry17 = await CSV.fetchJSON("./data/industry17.csv");
+// type,name
 const opt = document.createElement("option");
 opt.value = "all";
 opt.textContent = "全産業";
@@ -193,7 +194,7 @@ const show = async () => {
       return pp.join("");
     }
     const market = selmarket.value != "all" ? markets[selmarket.value] : "";
-    const industry = selindustry.value != "all" ? ` (${industry17[selindustry.value]})` : "";
+    const industry = selindustry.value != "all" ? ` (${industry17.find(i => i.type == selindustry.value).name})` : "";
     const head = `<h3>${cname}の東証${market}上場企業${n}社${industry} 時価総額合計${fixMarketCap(sumMarketCap(p))}</h3>`;
     detail.innerHTML = head + add(p);
   };
