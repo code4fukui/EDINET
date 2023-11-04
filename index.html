@@ -30,38 +30,69 @@ const sumMarketCap = (list) => {
     sum += n;
   }
   */
-  return fixMarketCap(sum);
+  return sum;
 };
+
+const markets = {
+  all: "全市場",
+  P: "プライム",
+  S: "スタンダード",
+  G: "グロース",
+};
+for (const name in markets) {
+  const opt = document.createElement("option");
+  opt.value = name;
+  opt.textContent = markets[name];
+  selmarket.appendChild(opt);
+}
+
+const industry17 = await CSV.fetchJSON("./data/industry17.csv");
+const opt = document.createElement("option");
+opt.value = "all";
+opt.textContent = "全産業";
+selindustry.appendChild(opt);
+for (const i of industry17) {
+  const opt = document.createElement("option");
+  opt.value = i.type;
+  opt.textContent = i.name;
+  selindustry.appendChild(opt);
+}
 
 const show = async () => {
   const data = await CSV.fetchJSON("./data/list_with_marketcap.csv");
   console.log(data.length); // old 3805 -> 3813
+  data.sort((a, b) => b.marketcap_m - a.marketcap_m);
 
-  const prefs = {};
-  for (const d of data) {
-    const p = prefs[d.pref];
-    if (p) {
-      p.push(d);
-    } else {
-      prefs[d.pref] = [d];
-    }
-  }
   const showunit = "社";
+
+  const getData = () => {
+    let ret = data;
+    const market = selmarket.value;
+    if (market != "all") {
+      ret = ret.filter(i => i.market == market);
+    }
+    const industry = selindustry.value;
+    if (industry != "all") {
+      ret = ret.filter(i => i.type == industry);
+    }
+    return ret;
+  };
 
   //const showname = sel.value;
   const getKPI = (pname, cname) => {
+    const data = getData();
     if (pname == "日本") {
-      const p = prefs[cname];
+      const p = data.filter(i => i.pref == cname);
       const unit = showunit;
       if (!p) {
-        return { kpi: 0, mcap: "" };
+        return { kpi: 0, mcap: 0 };
       }
       return { kpi: p.length, mcap: sumMarketCap(p) };
     } else {
-      const p = prefs[pname];
+      const p = data.filter(i => i.pref == pname);
       const unit = showunit;
       if (!p) {
-        return { kpi: 0, mcap: "" };
+        return { kpi: 0, mcap: 0 };
       }
       const cityMatch = (s1, s2) => s1.startsWith(s2) || s1.endsWith(s2);
       const list = p.filter(d => cityMatch(d.city, cname));
@@ -71,24 +102,32 @@ const show = async () => {
     }
   };
   const colorTabularMaps = (pname, tmap) => {
-    let min = 100000;
+    let min = 10000000000;
     let max = -min;
     
     for (const c of tmap.children) {
       const cname = c.cellname;
       if (cname !== "-") {
-        const { kpi } = getKPI(pname, cname);
+        const { mcap } = getKPI(pname, cname);
+        const kpi = mcap;
         if (isNaN(kpi)) continue;
         if (kpi < min) min = kpi;
         if (kpi > max) max = kpi;
       }
     }
-    max = 100;
+    //max = 100;
+    
+    const n2log = (n) => {
+      //return Math.log((Math.E - 1) * n + 1);
+      return Math.pow(n, .5);
+      //return n;
+    };
 
     for (const c of tmap.children) {
       const cname = c.cellname;
       if (cname !== "-") {
-        const { kpi } = getKPI(pname, cname);
+        const { mcap } = getKPI(pname, cname);
+        const kpi = mcap;
         if (isNaN(kpi)) {
           continue;
         }
@@ -97,10 +136,10 @@ const show = async () => {
           c.style.backgroundColor = "white";
           c.style.color = "black";
         } else if (kpi > 0) {
-          const n = kpi > max ? 1 : parseFloat(kpi) / max;
+          const n = kpi > max ? 1 : n2log((kpi - min) / (max - min));
           const h = 7;
           const s = 80;
-          const l = 95 - n * 50;
+          const l = 97 - n * 47;
           const col = `hsl(${h},${s}%,${l}%)`;
           //const col = `rgba(200,50,50,${l / 100 * .5})`;
           c.style.backgroundColor = col;
@@ -122,12 +161,13 @@ const show = async () => {
     }
   };
   const showDetail = (cname) => {
+    const data = getData();
     let p = null;
     if (!cname) {
       p = data;
       cname = "全国";
     } else {
-      p = prefs[cname];
+      p = data.filter(i => i.pref == cname);
       if (!p) {
         p = [];
       }
@@ -143,15 +183,18 @@ const show = async () => {
 
       const pp = [];
       for (const c of cities) {
-        const p2 = p.filter(p => p[child] == c).sort((a, b) => b.marketcap_m - a.marketcap_m);
+        const p2 = p.filter(p => p[child] == c);
         const html = `<h3>${c} ${p2.length}社</h3>` + p2.map(d => {
-          return { name: encodeHTML(d.name), seccode: d.seccode, mcap: d.marketcap_m }
-        }).map(({ name, seccode, mcap }) => `<a href="https://www.google.com/search?q=${name}">${name}(<a href="https://finance.yahoo.co.jp/quote/${seccode}.T">${seccode}</a>) ${fixMarketCap(mcap)}</a>`).join("<br>");
+          const market = markets[d.market];
+          return { name: encodeHTML(d.name), seccode: d.seccode, market, mcap: d.marketcap_m }
+        }).map(({ name, seccode, market, mcap }) => `<a href="https://www.google.com/search?q=${name}">${name}(<a href="https://finance.yahoo.co.jp/quote/${seccode}.T">${seccode}</a> ${market}) ${fixMarketCap(mcap)}</a>`).join("<br>");
         pp.push(html);
       }
       return pp.join("");
     }
-    const head = `<h3>${cname}の東証上場企業${n}社 時価総額合計${sumMarketCap(p)}</h3>`;
+    const market = selmarket.value != "all" ? markets[selmarket.value] : "";
+    const industry = selindustry.value != "all" ? ` (${industry17[selindustry.value]})` : "";
+    const head = `<h3>${cname}の東証${market}上場企業${n}社${industry} 時価総額合計${fixMarketCap(sumMarketCap(p))}</h3>`;
     detail.innerHTML = head + add(p);
   };
   const setCellContent = (c, pname, cname) => {
@@ -164,7 +207,7 @@ const show = async () => {
     const div2 = cr("div");
     div2.className = "val";
     const { kpi, mcap } = getKPI(pname, cname);
-    div2.innerHTML = `<span class=num>${kpi}社</span><br><span class=num2>${mcap}</span>`;
+    div2.innerHTML = `<span class=num>${kpi}社</span><br><span class=num2>${fixMarketCap(mcap)}</span>`;
     c.appendChild(div2);
     if (pname == "日本") {
       c.onclick = () => {
@@ -172,10 +215,16 @@ const show = async () => {
       };
     }
   };
-  tabularmaps.showJapan(setCellContent, colorTabularMaps, false);
 
-  const pname = convertJapanEn2Ja(document.location.hash.substring(1));
-  showDetail(pname);
+  const show2 = () => {
+    tabularmaps.showJapan(setCellContent, colorTabularMaps, false);
+    const pname = convertJapanEn2Ja(document.location.hash.substring(1));
+    showDetail(pname);
+  };
+  show2();
+
+  selmarket.oninput = () => show2();
+  selindustry.oninput = () => show2();
 };
 
 await show();
@@ -279,6 +328,8 @@ a {
 
 <h1>東証上場企業ダッシュボード <span id=tmtitle></span></h1>
 
+<select id="selmarket"></select>
+<select id="selindustry"></select><br>
 <div id="tmapc"></div>
 <button id="back">戻る</button><br>
 <div id=lastUpdate>更新日: 2023-11-04</div>
