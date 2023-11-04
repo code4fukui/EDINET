@@ -16,7 +16,7 @@ const convertJapanEn2Ja = (en) => {
 	return JAPAN_PREF[JAPAN_PREF_EN.indexOf(en)];
 };
 
-const fixMarketCap = (yen_m) => fixBigNum(yen_m, true) + "円";
+const fixMarketCap = (yen_m) => yen_m ? fixBigNum(yen_m, true) + "円" : "-";
 
 const sumMarketCap = (list) => {
   const sum = list.reduce((pre, i) => pre + parseInt(i.marketcap_m), 0);
