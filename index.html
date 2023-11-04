@@ -8,15 +8,13 @@ import { ArrayUtil } from "https://js.sabae.cc/ArrayUtil.js";
 import { encodeHTML } from "https://js.sabae.cc/encodeHTML.js";
 import tabularmaps from "https://code4fukui.github.io/gBizINFO/tabularmapsjapan.js";
 import { JAPAN_PREF, JAPAN_PREF_EN } from "https://js.sabae.cc/JAPAN_PREF.js";
-import { getPrefCity } from "./getPrefCity.js";
 import { Num } from "https://js.sabae.cc/Num.js";
-import { fixBigNum } from "./fixBigNum.js";
 
 const convertJapanEn2Ja = (en) => {
 	return JAPAN_PREF[JAPAN_PREF_EN.indexOf(en)];
 };
 
-const fixMarketCap = (yen_m) => yen_m ? fixBigNum(yen_m, true) + "円" : "-";
+const fixMarketCap = (yen_m) => yen_m ? Num.fixbig(yen_m, true) + "円" : "-";
 
 const sumMarketCap = (list) => {
   const sum = list.reduce((pre, i) => pre + parseInt(i.marketcap_m), 0);
@@ -339,7 +337,7 @@ a {
 
 <div class="credit">
 DATA: <a href="https://disclosure2.edinet-fsa.go.jp/WEEK0010.aspx">EDINET</a>, <a href="https://www.houjin-bangou.nta.go.jp/">国税庁法人番号公表サイト</a><br>
-LAYOUT: <a href=https://www.stopcovid19.jp/tabularmapsjapan.csv>TabularMaps Japan - 日本カラム地図 CSV</a> CC0 <a href=https://github.com/tabularmaps/hq>カラム地図 / TabularMaps on Github</a><br>
+LAYOUT: <a href=https://github.com/tabularmaps/areamap/blob/master/tabularmaps_japan.csv>TabularMaps Japan - 日本カラム地図 CSV</a> CC0 <a href=https://github.com/tabularmaps/hq>カラム地図 / TabularMaps on Github</a><br>
 <a href=https://github.com/code4fukui/EDINET/>data and src on GitHub</a><br>
 </div>
 
