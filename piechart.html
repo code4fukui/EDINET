@@ -3,7 +3,7 @@
 </head>
 <body>
 
-<h1>東証時価総額ダッシュボード</h1>
+<h1><a href=./piechart.html>東証時価総額ダッシュボード</a></h1>
 
 <select id="selpref"></select>
 <select id="selindustry"></select>
@@ -35,6 +35,7 @@ import { CSV } from "https://js.sabae.cc/CSV.js";
 //import { showPieChart } from "./showPieChart.js";
 import { showPieChart } from "https://code4fukui.github.io/piechart/showPieChart.js";
 import { setSelectMarket, markets, setSelectIndustry, industry17, setSelectPref } from "./setSelect.js";
+import { removeHash } from "https://js.sabae.cc/removeHash.js";
 
 setSelectPref(selpref);
 setSelectMarket(selmarket);
@@ -88,15 +89,23 @@ const getData = () => {
 		return true;
 	});
 };
+
+const sels = [selpref, selindustry, selmarket];
+document.location.hash.substring(1).split(",").forEach((n, idx) => sels[idx].selectedIndex = n);
+
 const show = () => {
 	const data = getData();
 	const prefmode = selpref.value == "all";
 	showPieChart(canvas, tbl, calcAll(data, prefmode), unit);
 	showPieChart(canvas2, tbl2, prefmode ? calcPref(data) : calcCity(data), unit);
+	document.location.hash = sels.map(i => i.selectedIndex).join(",");
+	if (document.location.hash == "#0,0,0") {
+		removeHash();
+	}
 };
 
 show();
-[selpref, selmarket, selindustry].forEach(i => i.oninput = () => show());
+sels.forEach(i => i.oninput = () => show());
 
 </script>
 <style>
@@ -113,6 +122,10 @@ h1 {
   margin-bottom: 1vw;
 	background-color: #ff5959;
 	color: white;
+}
+h1 a {
+	text-decoration: none;
+	color: white !important;
 }
 .piechart {
 	display: inline-block;
