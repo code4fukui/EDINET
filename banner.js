@@ -4,4 +4,5 @@ const list = [
   ["treemap.html", "差分ツリーマップ"],
 ];
 const path = document.location.pathname;
-banners.innerHTML = list.filter(i => !i[0].endsWith(path)).map(i => `<a class="banner" href=${i[0]}>${i[1]}</a>`).join("\n");
+console.log(path);
+banners.innerHTML = list.filter(i => !path.endsWith(i[0])).map(i => `<a class="banner" href=${i[0]}>${i[1]}</a>`).join("\n");
