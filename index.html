@@ -2,6 +2,121 @@
 <title>東証上場企業ダッシュボード</title>
 <meta property="og:title" content="東証上場企業ダッシュボード">
 <meta name="format-detection" content="telephone=no"/>
+<style>
+body {
+	font-family: sans-serif;
+	text-align: center;
+	margin: 0;
+	padding: 0;
+}
+h1 {
+	margin: 0;
+	font-size: 5vw;
+	padding: 2vw 0;
+  margin-bottom: 1vw;
+	background-color: #ff5959;
+	color: white;
+}
+h3 {
+	padding: .2em 0;
+	margin: 0;
+}
+#back {
+	margin: .5em;
+}
+.sub {
+	font-size: 83%;
+	display: inline-block;
+	background-color: white;
+	padding: 0 .3em;
+}
+.name {
+	font-size: min(2.5vw, 20px);
+}
+.num {
+	font-weight: bold;
+}
+.created {
+	color: #fd3a3a;
+}
+.terminated {
+	color:#718ab2;
+}
+/* tabularmaps */
+#tmapc {
+	max-width: 800px;
+	margin: 0 auto;
+}
+#tmapc > div > span {
+	font-size: min(1.5vw, 15px);
+	align-items: center;
+	justify-content: center;
+	border-radius: .5vw;
+	border: .1vw solid #333;
+	padding: .1vw .1vw;
+	margin: .2vw;
+}
+/* other */
+select {
+	font-size: 20px;
+	margin: 0 0 .5em 0;
+}
+#detail {
+	text-align: left;
+	padding: .3em;
+	font-size: 90%;
+	overflow: scroll;
+	display: inline-block;
+	border: 1px solid gray;
+	width: 90vw;
+	max-width: 700px;
+	height: 10em;
+}
+/* credit */
+.credit {
+	margin: 20px;
+	text-align: center;
+	font-size: 80%;
+}
+a {
+	color: #666 !important;
+}
+.links {
+	margin: 0;
+	margin-bottom: 1em;
+	x-background-color: #fd3a3a;
+	background-color: #ff6969;
+}
+.links a {
+	display: inline-block;
+	padding: .3em;
+	margin: 0.1 1em;
+	color: white !important;
+	text-decoration: none;
+}
+</style>
+</head>
+<body>
+
+<h1>東証上場企業ダッシュボード <span id=tmtitle></span></h1>
+
+<select id="selindustry"></select>
+<select id="selmarket"></select>
+<br>
+<div id="tmapc"></div>
+<button id="back">戻る</button><br>
+<div id=lastUpdate>更新日: 2023-11-08</div>
+<div id="detail"></div>
+
+<link rel="stylesheet" href="banner.css">
+<div id="banners"></div>
+
+<div class="credit">
+DATA: <a href="https://disclosure2.edinet-fsa.go.jp/WEEK0010.aspx">EDINET</a>, <a href="https://www.houjin-bangou.nta.go.jp/">国税庁法人番号公表サイト</a><br>
+LAYOUT: <a href=https://github.com/tabularmaps/areamap/blob/master/tabularmaps_japan.csv>TabularMaps Japan - 日本カラム地図 CSV</a> CC0 <a href=https://github.com/tabularmaps/hq>カラム地図 / TabularMaps on Github</a><br>
+<a href=https://github.com/code4fukui/EDINET/>data and src on GitHub</a><br>
+</div>
+
 <script type="module">
 import { CSV } from "https://js.sabae.cc/CSV.js";
 import { ArrayUtil } from "https://js.sabae.cc/ArrayUtil.js";
@@ -10,6 +125,7 @@ import tabularmaps from "https://code4fukui.github.io/gBizINFO/tabularmapsjapan.
 import { JAPAN_PREF, JAPAN_PREF_EN } from "https://js.sabae.cc/JAPAN_PREF.js";
 import { Num } from "https://js.sabae.cc/Num.js";
 import { setSelectMarket, markets, setSelectIndustry, industry17 } from "./setSelect.js";
+import "./banner.js";
 
 const convertJapanEn2Ja = (en) => {
 	return JAPAN_PREF[JAPAN_PREF_EN.indexOf(en)];
@@ -208,120 +324,5 @@ const show = async () => {
 await show();
 
 </script>
-<style>
-body {
-	font-family: sans-serif;
-	text-align: center;
-	margin: 0;
-	padding: 0;
-}
-h1 {
-	margin: 0;
-	font-size: 5vw;
-	padding: 2vw 0;
-  margin-bottom: 1vw;
-	background-color: #ff5959;
-	color: white;
-}
-h3 {
-	padding: .2em 0;
-	margin: 0;
-}
-#back {
-	margin: .5em;
-}
-.sub {
-	font-size: 83%;
-	display: inline-block;
-	background-color: white;
-	padding: 0 .3em;
-}
-.name {
-	font-size: min(2.5vw, 20px);
-}
-.num {
-	font-weight: bold;
-}
-.created {
-	color: #fd3a3a;
-}
-.terminated {
-	color:#718ab2;
-}
-/* tabularmaps */
-#tmapc {
-	max-width: 800px;
-	margin: 0 auto;
-}
-#tmapc > div > span {
-	font-size: min(1.5vw, 15px);
-	align-items: center;
-	justify-content: center;
-	border-radius: .5vw;
-	border: .1vw solid #333;
-	padding: .1vw .1vw;
-	margin: .2vw;
-}
-/* other */
-select {
-	font-size: 20px;
-	margin: 0 0 .5em 0;
-}
-#detail {
-	text-align: left;
-	padding: .3em;
-	font-size: 90%;
-	overflow: scroll;
-	display: inline-block;
-	border: 1px solid gray;
-	width: 90vw;
-	max-width: 700px;
-	height: 10em;
-}
-/* credit */
-.credit {
-	margin: 20px;
-	text-align: center;
-	font-size: 80%;
-}
-a {
-	color: #666 !important;
-}
-.links {
-	margin: 0;
-	margin-bottom: 1em;
-	x-background-color: #fd3a3a;
-	background-color: #ff6969;
-}
-.links a {
-	display: inline-block;
-	padding: .3em;
-	margin: 0.1 1em;
-	color: white !important;
-	text-decoration: none;
-}
-</style>
-<link rel="stylesheet" href="banner.css">
-</head>
-<body>
-
-<h1>東証上場企業ダッシュボード <span id=tmtitle></span></h1>
-
-<select id="selindustry"></select>
-<select id="selmarket"></select>
-<br>
-<div id="tmapc"></div>
-<button id="back">戻る</button><br>
-<div id=lastUpdate>更新日: 2023-11-08</div>
-<div id="detail"></div>
-
-<a class="banner" href=./piechart.html>東証時価総額を円グラフで見る</a>
-
-<div class="credit">
-DATA: <a href="https://disclosure2.edinet-fsa.go.jp/WEEK0010.aspx">EDINET</a>, <a href="https://www.houjin-bangou.nta.go.jp/">国税庁法人番号公表サイト</a><br>
-LAYOUT: <a href=https://github.com/tabularmaps/areamap/blob/master/tabularmaps_japan.csv>TabularMaps Japan - 日本カラム地図 CSV</a> CC0 <a href=https://github.com/tabularmaps/hq>カラム地図 / TabularMaps on Github</a><br>
-<a href=https://github.com/code4fukui/EDINET/>data and src on GitHub</a><br>
-</div>
-
 </body>
 </html>

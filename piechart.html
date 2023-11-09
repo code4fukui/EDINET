@@ -22,7 +22,7 @@
 <div id=lastUpdate>更新日: 2023-11-08</div>
 
 <link rel="stylesheet" href="banner.css">
-<a class="banner" href=./>東証上場企業をカラム地図で見る</a>
+<div id="banners"></div>
 
 <div id="credit">
 DATA: <a href="https://disclosure2.edinet-fsa.go.jp/WEEK0010.aspx">EDINET</a>, <a href="https://www.houjin-bangou.nta.go.jp/">国税庁法人番号公表サイト</a><br>
@@ -36,6 +36,7 @@ import { CSV } from "https://js.sabae.cc/CSV.js";
 import { showPieChart } from "https://code4fukui.github.io/piechart/showPieChart.js";
 import { setSelectMarket, markets, setSelectIndustry, industry17, setSelectPref } from "./setSelect.js";
 import { removeHash } from "https://js.sabae.cc/removeHash.js";
+import "./banner.js";
 
 setSelectPref(selpref);
 setSelectMarket(selmarket);

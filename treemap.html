@@ -1,0 +1,277 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="icon" href="data:">
+<title>上場企業ダッシュボード 差分ツリーマップ</title>
+</head>
+<body>
+
+<h1><a href=./treemap.html>上場企業ダッシュボード 差分ツリーマップ</a></h1>
+
+<select id="selpref"></select>
+<select id="selindustry"></select>
+<select id="selmarket"></select>
+<br>
+
+<div class=chart id=divtreemap>
+</div>
+
+<div id=lastUpdate></div>
+
+<link rel="stylesheet" href="banner.css">
+<div id="banners"></div>
+
+<div id="credit">
+DATA: <a href="https://disclosure2.edinet-fsa.go.jp/WEEK0010.aspx">EDINET</a>, <a href="https://www.houjin-bangou.nta.go.jp/">国税庁法人番号公表サイト</a><br>
+Lib: <a href=https://github.com/code4fukui/apexcharts.js/>ApexCharts</a><br>
+<a href=https://github.com/code4fukui/EDINET/>data and src on GitHub</a><br>
+</div>
+
+<script type="module">
+import { CSV } from "https://js.sabae.cc/CSV.js";
+import ApexCharts from "https://code4fukui.github.io/apexcharts.js/ApexCharts.js";
+import { setSelectMarket, markets, setSelectIndustry, industry17, setSelectPref } from "./setSelect.js";
+import { removeHash } from "https://js.sabae.cc/removeHash.js";
+import { Num } from "https://js.sabae.cc/Num.js";
+import "./banner.js";
+
+setSelectPref(selpref);
+setSelectMarket(selmarket);
+setSelectIndustry(selindustry);
+
+const calcAll = (list, pref = true) => {
+  const res = {};
+  for (const i of list) {
+    const name = i.name.replace(/株式会社/, "") + " (" + (pref ? i.pref : i.city) + ")";
+    res[name] = i.marketcap_m;
+  }
+  return res;
+};
+const calcPref = (list) => {
+  const res = {};
+  for (const i of list) {
+    if (!res[i.pref]) {
+      res[i.pref] = 0;
+    }
+    res[i.pref] += i.marketcap_m;
+  }
+  return res;
+};
+const calcCity = (list, pref) => {
+  const res = {};
+  for (const i of list) {
+    if (!res[i.city]) {
+      res[i.city] = 0;
+    }
+    res[i.city] += i.marketcap_m;
+  }
+  return res;
+};
+
+const url = "./data/marketcap/index.csv";
+const list = await CSV.fetchJSON(url);
+const fetchData = async (name) => {
+  const data = await CSV.fetchJSON("./data/marketcap/" + name);
+  data.forEach(i => {
+    i.marketcap_m = parseInt(i.marketcap_m);
+    i.name = i.name.replace(/株式会社/, "");// + " (" + (pref ? i.pref : i.city) + ")";
+  });
+  return data;
+};
+const dlatest = list[list.length - 1];
+const dpast = list[list.length - 2];
+const latest = await fetchData(dlatest.file);
+const past = await fetchData(dpast.file);
+
+lastUpdate.textContent = `更新日: ${dlatest.date} (${dpast.date}からの差分)`;
+
+const getData = (list) => {
+  return list.filter(i => {
+    if (selpref.value != "all" && i.pref != selpref.value) {
+      return false;
+    } else if (selmarket.value != "all" && i.market != selmarket.value) {
+      return false;
+    } else if (selindustry.value != "all" && i.type != selindustry.value) {
+      return false;
+    }
+    return true;
+  });
+};
+
+const sels = [selpref, selindustry, selmarket];
+document.location.hash.substring(1).split(",").forEach((n, idx) => sels[idx].selectedIndex = n);
+
+const makeDiff = (a, b) => {
+  const res = [];
+  for (const d of a) {
+    const d2 = b.find(i => i.seccode == d.seccode);
+    if (!d2) continue;
+    const o = {};
+    Object.assign(o, d);
+    const dmarketcap_m = d.marketcap_m - d2.marketcap_m;
+    res.push({ x: d.name, y: dmarketcap_m });
+  }
+  res.sort((a, b) => b.y - a.y);
+  return res;
+};
+
+const showTreemap = (data) => {
+  const options = {
+    series: [{ data }],
+    legend: {
+      show: false
+    },
+    chart: {
+      height: 650,
+      type: 'treemap'
+    },
+    /*
+    title: {
+      text: 'Treemap with Color scale'
+    },
+    */
+    dataLabels: {
+      enabled: true,
+      style: {
+        fontSize: '12px',
+      },
+      formatter: (text, op) => {
+        return [text, Num.fixbig(op.value, true) + "円"]
+      },
+      offsetY: -4
+    },
+    plotOptions: {
+      treemap: {
+        enableShades: true,
+        shadeIntensity: 0.5,
+        reverseNegativeShade: true,
+        colorScale: {
+          ranges: [
+            {
+              from: -1000000000,
+              to: 0,
+              color: '#CD363A'
+            },
+            {
+              from: 0.001,
+              to: 1000000000,
+              color: '#32219C'
+            }
+          ]
+        }
+      }
+    }
+  };
+  divtreemap.innerHTML = "";
+  const chart = new ApexCharts(divtreemap, options);
+  chart.render();
+};
+
+const show = () => {
+  const prefmode = selpref.value == "all";
+  document.location.hash = sels.map(i => i.selectedIndex).join(",");
+  if (document.location.hash == "#0,0,0") {
+    removeHash();
+  }
+
+  const data = makeDiff(getData(latest), getData(past));
+  const unit = "百万円";
+
+  console.log(data);
+  showTreemap(data);
+};
+
+
+show();
+sels.forEach(i => i.oninput = () => show());
+
+
+</script>
+<style>
+body {
+  font-family: sans-serif;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+}
+h1 {
+  margin: 0;
+  font-size: 4vw;
+  padding: 2vw 0;
+  margin-bottom: 1vw;
+  background-color: #ff5959;
+  color: white;
+}
+h1 a {
+  text-decoration: none;
+  color: white !important;
+}
+.piechart {
+  display: inline-block;
+  margin: 1em;
+}
+.chart {
+  display: block;
+	height: 650px;
+}
+.tbl {
+  margin-top: 1em;
+  display: inline-block;
+  vertical-align: top;
+}
+.tbl table td:first-child {
+  text-align: left;
+}
+table {
+  border-collapse: collapse;
+  display: inline-block;
+  text-align: right;
+}
+td {
+  font-size: 70%;
+  border: 1px solid #444;
+  padding: 2px;
+  x-white-space: nowrap;
+  word-break: break-all;
+}
+select {
+  font-size: 16px;
+}
+#credit a {
+  color: gray !important;
+  text-decoration: none;
+}
+#credit {
+  margin-top: 1em;
+  font-size: 80%;
+}
+#head {
+  font-size: 80%;
+  margin-bottom: .5em;
+}
+#head a {
+  color: gray !important;
+  text-decoration: none;
+}
+#title {
+  margin-top: 1em;
+}
+
+button {
+  margin: 3px;
+  background-color: white;
+}
+@media screen and (max-width: 440px) {
+  .piechart {
+    margin: 0;
+  }
+  canvas {
+    display: inline-block;
+    width: 360px;
+    height: 360px;
+  }
+}
+#credit {
+  margin-top: 1em;
+}
+</style>
+
+</body>
+</html>
