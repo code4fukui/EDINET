@@ -100,16 +100,23 @@ document.location.hash.substring(1).split(",").forEach((n, idx) => sels[idx].sel
 
 const makeDiff = (a, b) => {
   const res = [];
+  let max = 0;
   for (const d of a) {
     const d2 = b.find(i => i.seccode == d.seccode);
     if (!d2) continue;
-    const o = {};
-    Object.assign(o, d);
     const dmarketcap_m = d.marketcap_m - d2.marketcap_m;
+    const am = Math.abs(dmarketcap_m);
+    if (am > max) {
+      max = am;
+    }
     res.push({ x: d.name, y: dmarketcap_m });
   }
-  res.sort((a, b) => b.y - a.y);
-  return res;
+  const min = max / 1000; // omit under 0.1%
+  //const min = 0;
+  const res2 = res.filter(i => Math.abs(i.y) > min);
+  res2.sort((a, b) => b.y - a.y);
+  console.log(res.length, res2.length);
+  return res2;
 };
 
 const showTreemap = (data) => {
@@ -174,7 +181,7 @@ const show = () => {
   const data = makeDiff(getData(latest), getData(past));
   const unit = "百万円";
 
-  console.log(data);
+  //console.log(data);
   showTreemap(data);
 };
 
