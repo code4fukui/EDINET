@@ -111,12 +111,16 @@ const makeDiff = (a, b) => {
     }
     res.push({ x: d.name, y: dmarketcap_m });
   }
-  const min = max / 1000; // omit under 0.1%
-  //const min = 0;
-  const res2 = res.filter(i => Math.abs(i.y) > min);
-  res2.sort((a, b) => b.y - a.y);
-  console.log(res.length, res2.length);
-  return res2;
+  if (res.length >= 1000) { // omit if over 1000
+    const min = max / 1000; // omit under 0.1%
+    //const min = 0;
+    const res2 = res.filter(i => Math.abs(i.y) > min);
+    res2.sort((a, b) => b.y - a.y);
+    console.log(res.length, res2.length);
+    return res2;
+  } else {
+    return res.sort((a, b) => b.y - a.y);
+  }
 };
 
 const showTreemap = (data) => {
