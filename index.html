@@ -102,10 +102,17 @@ a {
 
 <select id="selindustry"></select>
 <select id="selmarket"></select>
+<select id="selyear">
+  <option value=0>-</option>
+  <option value=1996>1996年以降設立</option>
+  <option value=2000>2000年以降設立</option>
+  <option value=2010>2010年以降設立</option>
+  <option value=2020>2020年以降設立</option>
+</select>
 <br>
 <div id="tmapc"></div>
 <button id="back">戻る</button><br>
-<div id=lastUpdate>更新日: 2023-11-10</div>
+<div><span id=lastUpdate>更新日: 2023-11-10</span> *設立年は832社(21.7%)が調査中</div>
 <div id="detail"></div>
 
 <link rel="stylesheet" href="banner.css">
@@ -168,6 +175,10 @@ const show = async () => {
     const industry = selindustry.value;
     if (industry != "all") {
       ret = ret.filter(i => i.type == industry);
+    }
+    const y = selyear.value;
+    if (y > 0) {
+      ret = ret.filter(i => i.since && i.since >= y);
     }
     return ret;
   };
@@ -319,6 +330,12 @@ const show = async () => {
 
   selmarket.oninput = () => show2();
   selindustry.oninput = () => show2();
+  selyear.oninput= () => show2();
+
+  addEventListener("hashchange", () => {
+    const pname = convertJapanEn2Ja(document.location.hash.substring(1));
+    showDetail(pname);
+  });
 };
 
 await show();
