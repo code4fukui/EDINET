@@ -11,7 +11,3 @@ const bin = zips.decompress(filenames[0]);
 const csv = CSV.decode(SJIS.decode(bin));
 csv.splice(0, 1);
 await Deno.writeTextFile("data/edinetcode.csv", CSV.encode(csv));
-
-const data = CSV.toJSON(csv);
-const sec = data.filter(d => d.上場区分 == "上場");
-await Deno.writeTextFile("data/seccode.csv", CSV.stringify(sec));
