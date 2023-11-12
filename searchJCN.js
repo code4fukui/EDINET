@@ -1,7 +1,23 @@
 import { HTMLParser } from "https://js.sabae.cc/HTMLParser.js";
 
+const getToken = async () => {
+  const url = "https://www.houjin-bangou.nta.go.jp";
+  const text = await (await fetch(url)).text();
+  await Deno.writeTextFile("_getToken.html", text);  
+  const dom = HTMLParser.parse(text);
+  const token = dom.querySelector("form#appForm input").getAttribute("value");
+  console.log(token);
+  return token;
+};
+//const token = getToken(); // NG
+const token = "fb932017-f90a-4c02-ba99-e40775283bdd";
+  /*
+      <form id="appForm" action="/index.html" method="post"><div><input type="hidden" name="jp.go.nta.houjin_bangou.framework.web.common.CNSFWTokenProcessor.request.token" value="d003a9c2-9495-4963-b78c-6d87189855c2"/></div>
+  */
+
+
 const fetchHTML = async (name) => {
-  const body = `jp.go.nta.houjin_bangou.framework.web.common.CNSFWTokenProcessor.request.token=d13ab817-1e0f-4cfc-aa29-908bde285960&houzinNmShTypeRbtn=2&houzinNmTxtf=${encodeURIComponent(name)}&_kanaCkbx=on&_noconvCkbx=on&_enCkbx=on&houzinAddrShTypeRbtn=1&prefectureLst=&houzinNoShTyoumeSts=0&kokugaiTxtf=&zipCdTxtf=&prefectureLstEn=&kokugaiTxtfEn=&houzinNoShSonotaZyoukenSts=0&_houzinKdCkbx=on&_houzinKdCkbx=on&_houzinKdCkbx=on&_houzinKdCkbx=on&_houzinKdCkbx=on&_houzinKdCkbx=on&_houzinKdCkbx=on&_houzinKdCkbx=on&_historyCkbx=on&_hideCkbx=on&closeCkbx=1&_closeCkbx=on&_chgYmdShTargetCkbx=on&chgYmdEyFromLst=000&chgYmdMFromLst=00&chgYmdDFromLst=00&chgYmdEyToLst=000&chgYmdMToLst=00&chgYmdDToLst=00&orderRbtn=1&houzinKdRbtn=0&_historyCkbx=on&orderRbtnEn=1&houzinNoTxtf=&searchFlg=1&preSyousaiScreenId=KJSCR0101010`;
+  const body = `jp.go.nta.houjin_bangou.framework.web.common.CNSFWTokenProcessor.request.token=${token}&houzinNmShTypeRbtn=2&houzinNmTxtf=${encodeURIComponent(name)}&_kanaCkbx=on&_noconvCkbx=on&_enCkbx=on&houzinAddrShTypeRbtn=1&prefectureLst=&houzinNoShTyoumeSts=0&kokugaiTxtf=&zipCdTxtf=&prefectureLstEn=&kokugaiTxtfEn=&houzinNoShSonotaZyoukenSts=0&_houzinKdCkbx=on&_houzinKdCkbx=on&_houzinKdCkbx=on&_houzinKdCkbx=on&_houzinKdCkbx=on&_houzinKdCkbx=on&_houzinKdCkbx=on&_houzinKdCkbx=on&_historyCkbx=on&_hideCkbx=on&closeCkbx=1&_closeCkbx=on&_chgYmdShTargetCkbx=on&chgYmdEyFromLst=000&chgYmdMFromLst=00&chgYmdDFromLst=00&chgYmdEyToLst=000&chgYmdMToLst=00&chgYmdDToLst=00&orderRbtn=1&houzinKdRbtn=0&_historyCkbx=on&orderRbtnEn=1&houzinNoTxtf=&searchFlg=1&preSyousaiScreenId=KJSCR0101010`;
 
   const url = "https://www.houjin-bangou.nta.go.jp/kensaku-kekka.html";
   const headers = {
