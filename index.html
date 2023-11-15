@@ -102,6 +102,12 @@ a {
 
 <select id="selindustry"></select>
 <select id="selmarket"></select>
+<select id="selsize">
+  <option value=0>すべて</option>
+  <option value=1>大型株</option>
+  <option value=2>中型株</option>
+  <option value=3>小型株</option>
+</select>
 <select id="selyear">
   <option value=0>-</option>
   <option value=1996>1996年以降設立</option>
@@ -179,6 +185,13 @@ const show = async () => {
     const y = selyear.value;
     if (y > 0) {
       ret = ret.filter(i => i.since && i.since >= y);
+    }
+    const s = parseInt(selsize.value);
+    if (s > 0) {
+      const sizes = [Infinity, 1000000, 100000, 0];
+      const max = sizes[s - 1];
+      const min = sizes[s];
+      ret = ret.filter(i => i.marketcap_m <= max && i.marketcap_m >= min);
     }
     return ret;
   };
@@ -331,6 +344,7 @@ const show = async () => {
   selmarket.oninput = () => show2();
   selindustry.oninput = () => show2();
   selyear.oninput= () => show2();
+  selsize.oninput= () => show2();
 
   addEventListener("hashchange", () => {
     const pname = convertJapanEn2Ja(document.location.hash.substring(1));
