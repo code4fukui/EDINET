@@ -305,7 +305,7 @@ const show = async () => {
         const html = `<h3>${c} ${p2.length}社</h3>` + p2.map(d => {
           const market = markets[d.market];
           return { name: encodeHTML(d.name), seccode: d.seccode, market, mcap: d.marketcap_m }
-        }).map(({ name, seccode, market, mcap }) => `<a href="https://www.google.com/search?q=${name}">${name}(<a href="https://finance.yahoo.co.jp/quote/${seccode}.T">${seccode}</a> ${market}) ${fixMarketCap(mcap)}</a>`).join("<br>");
+        }).map(({ name, seccode, market, mcap }) => `<a href="https://www.google.com/search?q=${name}">${name}</a> (<a href="https://finance.yahoo.co.jp/quote/${seccode}.T">${seccode}</a> ${market}) ${fixMarketCap(mcap)}</a>`).join("<br>");
         pp.push(html);
       }
       return pp.join("");
