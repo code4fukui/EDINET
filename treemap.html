@@ -1,17 +1,18 @@
 <!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="icon" href="data:">
-<title>上場企業ダッシュボード 差分ツリーマップ</title>
+<title>上場企業ダッシュボード ツリーマップ</title>
 </head>
 <body>
 
-<h1><a href=./treemap.html>上場企業ダッシュボード 差分ツリーマップ</a></h1>
+<h1><a href=./treemap.html>上場企業ダッシュボード ツリーマップ</a></h1>
 
 <select id="selpref"></select>
 <select id="selindustry"></select>
 <select id="selmarket"></select>
+<label><input id="chkdiff" type="checkbox">差分</label>
 <br>
 
-<div class=chart id=divtreemap>
-</div>
+<div class=chart id=divtreemap></div>
+<div class=chart id=divtreemap2></div>
 
 <div id=lastUpdate></div>
 
@@ -31,6 +32,7 @@ import { setSelectMarket, markets, setSelectIndustry, industry17, setSelectPref 
 import { removeHash } from "https://js.sabae.cc/removeHash.js";
 import { Num } from "https://js.sabae.cc/Num.js";
 import "./banner.js";
+import { hsl2rgb } from "https://js.sabae.cc/hsl2rgb.js";
 
 setSelectPref(selpref);
 setSelectMarket(selmarket);
@@ -80,7 +82,7 @@ const dpast = list[list.length - 2];
 const latest = await fetchData(dlatest.file);
 const past = await fetchData(dpast.file);
 
-lastUpdate.textContent = `更新日: ${dlatest.date} (${dpast.date}からの差分)`;
+lastUpdate.textContent = `更新日: ${dlatest.date} (差分は${dpast.date}から)`;
 
 const getData = (list) => {
   return list.filter(i => {
@@ -96,34 +98,87 @@ const getData = (list) => {
 };
 
 const sels = [selpref, selindustry, selmarket];
-document.location.hash.substring(1).split(",").forEach((n, idx) => sels[idx].selectedIndex = n);
+document.location.hash.substring(1).split(",").forEach((n, idx) => {
+  if (idx < sels.length) {
+    sels[idx].selectedIndex = n;
+  } else if (idx == sels.length) {
+    chkdiff.checked = n == "1";
+  }
+});
+
+const omitSmall = (res) => {
+  if (res.length < 1000) {
+    return res;
+  }
+  // omit if over 1000
+  let max = 0;
+  for (const d of res) {
+    const am = Math.abs(d.y);
+    if (am > max) {
+      max = am;
+    }
+  }
+  const min = max / 1000; // omit under 0.1%
+  return res.filter(i => Math.abs(i.y) > min);
+};
 
 const makeDiff = (a, b) => {
   const res = [];
-  let max = 0;
   for (const d of a) {
     const d2 = b.find(i => i.seccode == d.seccode);
     if (!d2) continue;
     const dmarketcap_m = d.marketcap_m - d2.marketcap_m;
-    const am = Math.abs(dmarketcap_m);
-    if (am > max) {
-      max = am;
-    }
     res.push({ x: d.name, y: dmarketcap_m });
   }
-  if (res.length >= 1000) { // omit if over 1000
-    const min = max / 1000; // omit under 0.1%
-    //const min = 0;
-    const res2 = res.filter(i => Math.abs(i.y) > min);
-    res2.sort((a, b) => b.y - a.y);
-    console.log(res.length, res2.length);
-    return res2;
-  } else {
-    return res.sort((a, b) => b.y - a.y);
-  }
+  return omitSmall(res).sort((a, b) => b.y - a.y);
 };
 
-const showTreemap = (data) => {
+const makeOne = (a) => {
+  const res = a.map(i => ({ x: i.name, y: i.marketcap_m }));
+  return omitSmall(res).sort((a, b) => b.y - a.y);
+};
+
+const getIndustry = (name) => {
+  const d = latest.find(i => i.name == name);
+  if (!d) throw new Error("illegal name");
+  return industry17.find(i => i.type == d.type).name;
+};
+
+const joinByIndustry = (data) => {
+  const list = {};
+  for (const d of data) {
+    const id = getIndustry(d.x);
+    const p = list[id];
+    if (p) {
+      p.y += d.y;
+    } else {
+      list[id] = { x: id, y: d.y };
+    }
+  }
+  const res = Object.values(list);
+  res.sort((a, b) => b.y - a.y);
+  return res;
+};
+const hex = (n, digits) => {
+  n = Math.floor(n);
+  const s = "000000000000000000" + n.toString(16);
+  const res = s.substring(s.length - digits);
+  return res;
+};
+const fromHSL = (h, s, l) => {
+  const rgb = hsl2rgb(h, s, l);
+  const c = "#" + rgb.map(i => hex(i, 2)).join("");
+  return c;
+};
+const makeColorsByIndustry = (data) => {
+  const colors = data.map(i => {
+    const n = industry17.findIndex(j => j.name == i.x);
+    return fromHSL(n / 18 * 360, 0.6, 0.55 - (n % 2) * 0.3)
+  });
+  return colors;
+};
+
+const showTreemap = (divtreemap, data, colors, showtitle) => {
   const options = {
     series: [{ data }],
     legend: {
@@ -133,11 +188,6 @@ const showTreemap = (data) => {
       height: 650,
       type: 'treemap'
     },
-    /*
-    title: {
-      text: 'Treemap with Color scale'
-    },
-    */
     dataLabels: {
       enabled: true,
       style: {
@@ -168,8 +218,32 @@ const showTreemap = (data) => {
           ]
         }
       }
-    }
+    },
+    tooltip: {
+      /*
+      custom: ({series, seriesIndex, dataPointIndex, w}) => {
+        const d = w.config.series[seriesIndex].data[dataPointIndex];
+        return `${d.x}<br>${Num.fixbig(d.y, true)}円`
+      },
+      */
+      y: {
+        formatter: (v) => {
+          return Num.fixbig(v, true) + "円";
+        },
+      }
+    },
   };
+  if (colors) {
+    options.colors = colors;
+    options.plotOptions.treemap.distributed = true;
+    options.plotOptions.treemap.enableShades = false;
+    delete options.plotOptions.treemap.colorScale;
+  }
+  if (showtitle) {
+    options.title = {
+      text: Num.fixbig(data.reduce((pre, i) => pre + i.y, 0), true) + "円",
+    };
+  }
   divtreemap.innerHTML = "";
   const chart = new ApexCharts(divtreemap, options);
   chart.render();
@@ -177,21 +251,32 @@ const showTreemap = (data) => {
 
 const show = () => {
   const prefmode = selpref.value == "all";
-  document.location.hash = sels.map(i => i.selectedIndex).join(",");
-  if (document.location.hash == "#0,0,0") {
+  document.location.hash = sels.map(i => i.selectedIndex).join(",") + "," + (chkdiff.checked ? 1 : 0);
+  if (document.location.hash == "#0,0,0,0") {
     removeHash();
   }
 
-  const data = makeDiff(getData(latest), getData(past));
-  const unit = "百万円";
+  if (chkdiff.checked) {
+    const data = makeDiff(getData(latest), getData(past));
+    showTreemap(divtreemap, data, null, true);
 
-  //console.log(data);
-  showTreemap(data);
+    const data2 = joinByIndustry(data);
+    const colors = makeColorsByIndustry(data2);
+    showTreemap(divtreemap2, data2);
+  } else {
+    const data = makeOne(getData(latest));
+    showTreemap(divtreemap, data, null, true);
+
+    const data2 = joinByIndustry(data);
+    const colors = makeColorsByIndustry(data2);
+    showTreemap(divtreemap2, data2, colors);
+  }
 };
 
 
 show();
 sels.forEach(i => i.oninput = () => show());
+chkdiff.oninput = () => show();
 
 
 </script>

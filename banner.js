@@ -1,7 +1,7 @@
 const list = [
   ["./", "東証上場企業カラム地図"],
   ["piechart.html", "時価総額円グラフ"],
-  ["treemap.html", "差分ツリーマップ"],
+  ["treemap.html", "時価総額ツリーマップ"],
 ];
 const path = document.location.pathname;
 console.log(path);
