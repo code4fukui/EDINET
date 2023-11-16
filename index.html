@@ -188,10 +188,13 @@ const show = async () => {
     }
     const s = parseInt(selsize.value);
     if (s > 0) {
-      const sizes = [Infinity, 1000000, 100000, 0];
-      const max = sizes[s - 1];
-      const min = sizes[s];
-      ret = ret.filter(i => i.marketcap_m <= max && i.marketcap_m >= min);
+      if (s == 1) {
+        ret = ret.filter(i => i.marketcap_m >= 1000000);
+      } else if (s == 2) {
+        ret = ret.filter(i => i.marketcap_m >= 100000);
+      } else if (s == 3) {
+        ret = ret.filter(i => i.marketcap_m < 100000);
+      }
     }
     return ret;
   };
