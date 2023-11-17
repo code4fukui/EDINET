@@ -118,7 +118,7 @@ a {
 <br>
 <div id="tmapc"></div>
 <button id="back">戻る</button><br>
-<div><span id=lastUpdate>更新日: 2023-11-10</span> *設立年は832社(21.7%)が調査中</div>
+<div><span id=lastUpdate></span> *設立年は832社(21.7%)が調査中</div>
 <div id="detail"></div>
 
 <link rel="stylesheet" href="banner.css">
@@ -166,7 +166,11 @@ setSelectMarket(selmarket);
 setSelectIndustry(selindustry);
 
 const show = async () => {
-  const data = await CSV.fetchJSON("./data/list_with_marketcap.csv");
+  const list = await CSV.fetchJSON("./data/marketcap/index.csv");
+  const latest = list[list.length - 1];
+  console.log(latest);
+  const data = await CSV.fetchJSON("./data/marketcap/" + latest.file);
+  lastUpdate.textContent = "更新日: " + latest.date;
   console.log(data.length); // old 3805 -> 3813
   data.sort((a, b) => b.marketcap_m - a.marketcap_m);
 
