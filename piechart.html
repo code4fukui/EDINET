@@ -19,7 +19,7 @@
 	<div class="tbl" id="tbl2"></div>
 </div>
 
-<div id=lastUpdate>更新日: 2023-11-10</div>
+<div id=lastUpdate></div>
 
 <link rel="stylesheet" href="banner.css">
 <div id="banners"></div>
@@ -71,8 +71,15 @@ const calcCity = (list, pref) => {
 	return res;
 };
 
-const url = "./data/list_with_marketcap.csv";
-const list = await CSV.fetchJSON(url);
+const index = await CSV.fetchJSON("./data/marketcap/index.csv");
+const latest = index[index.length - 1];
+console.log(latest);
+const list = await CSV.fetchJSON("./data/marketcap/" + latest.file);
+lastUpdate.textContent = "更新日: " + latest.date;
+console.log(list.length); // old 3805 -> 3813
+
+//const url = "./data/list_with_marketcap.csv";
+//const list = await CSV.fetchJSON(url);
 list.forEach(i => {
 	i.marketcap_m = parseInt(i.marketcap_m)
 });
@@ -132,7 +139,7 @@ h1 a {
 	display: inline-block;
 	margin: 1em;
 }
-canvas {
+.piechart canvas {
 	display: inline-block;
 	width: 400px;
 	height: 400px;
