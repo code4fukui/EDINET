@@ -29,7 +29,7 @@ deno run -A download-dataj.js
 ```sh
 deno run -A make-listedcompany.js
 ```
-→ data/listed_company.csv
+→ update data/listed_company.csv
 → update data/seccode_append.csv
 
 ## todo
