@@ -1,5 +1,6 @@
 import { CSV } from "https://js.sabae.cc/CSV.js";
 import { searchJCN } from "./searchJCN.js";
+import { getInfoByJCN } from "./getInfoByJCN.js";
 
 const dataj = await CSV.fetchJSON("data/data_j.csv");
 const seccodes = await CSV.fetchJSON("data/seccode.csv");
@@ -14,7 +15,7 @@ const getCompanyBySeccode = (seccode) => {
   return res;
 };
 
-const data = [];
+const data = await CSV.fetchJSON("data/listed_company.csv");
 for (const d of dataj) {
   const name = d.銘柄名;
   if (name.endsWith(" 優先株式")) {
@@ -54,7 +55,17 @@ for (const d of dataj) {
   delete d["33業種区分"];
   delete d["17業種区分"];
   delete d["規模区分"];
-  data.push(d);
+  if (!data.find(i => i.コード == d.コード)) {
+    // ,法人名,法人名ふりがな,法人名英語,本店所在地,設立,時価総額
+    const info = await getInfoByJCN(d.法人番号);
+    d.法人名 = info.corporateName;
+    d.法人名ふりがな = info.corporateKana;
+    d.本店所在地 = info.location;
+    data.push(d);
+    console.log("new!", d);
+  }
 }
-await Deno.writeTextFile("data/seccode_append.csv", CSV.stringify(seccodesA));
+// 日付,コード,銘柄名,33業種コード,17業種コード,規模コード,市場コード,法人番号,法人名,法人名ふりがな,法人名英語,本店所在地,設立,時価総額
 await Deno.writeTextFile("data/listed_company.csv", CSV.stringify(data));
+
+await Deno.writeTextFile("data/seccode_append.csv", CSV.stringify(seccodesA));
