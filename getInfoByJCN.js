@@ -11,4 +11,4 @@ export const getInfoByJCN = async (jcn) => {
   return await gbiz.getBasic(jcn);
 };
 
-console.log(await getInfoByJCN("3011101042092"));
+//console.log(await getInfoByJCN("3011101042092"));
