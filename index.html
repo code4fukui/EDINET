@@ -270,11 +270,13 @@ const show = async () => {
           continue;
         }
         //const n = (parseFloat(kpi) - min) / (max - min);
+        const maxabs = Math.max(Math.abs(max), Math.abs(min));
         if (kpi == 0) {
           c.style.backgroundColor = "white";
           c.style.color = "black";
         } else if (kpi > 0) {
-          const n = kpi > max ? 1 : n2log((kpi - min) / (max - min));
+          //const n = kpi > max ? 1 : n2log((kpi - min) / (max - min));
+          const n = kpi > maxabs ? 1 : n2log(kpi / maxabs);
           const h = 7;
           const s = 80;
           const l = 97 - n * 47;
@@ -283,7 +285,8 @@ const show = async () => {
           c.style.backgroundColor = col;
           c.style.color = l > 70 ? "black" : "white";
         } else if (kpi < 0) {
-          const n = parseFloat(kpi) / min;
+          const n = kpi < -maxabs ? 1 : n2log(kpi / -maxabs);
+          //const n = parseFloat(kpi) / min;
           const h = 220;
           const s = 50;
           const l = 95 - n * 40;
