@@ -1,25 +1,29 @@
 # EDINET
- 
-オープンデータとして提供される、電子情報開示システム「EDINET」をクロスオリジン対応のCSV形式で提供する
 
-- [日別文書一覧](data/documents)
-- [EDINETコード一覧](data/edinetcode.csv)
-- [東証上場企業ダッシュボード](https://code4fukui.github.io/EDINET/)
-- [東証上場企業一覧](data/seccode.csv) （[アプリ](https://code4fukui.github.io/EDINET/seccode.html))
+> 日本語のREADMEはこちらです: [README.ja.md](README.ja.md)
 
-## 関連
+The EDINET (Electronic Disclosure for Investors' NETwork) open data is provided in cross-origin compliant CSV format.
+
+## Features
+
+- [Daily document list](data/documents)
+- [EDINET code list](data/edinetcode.csv)
+- [Tokyo Stock Exchange listed company dashboard](https://code4fukui.github.io/EDINET/)
+- [Tokyo Stock Exchange listed company list](data/seccode.csv) ([App](https://code4fukui.github.io/EDINET/seccode.html))
+
+## Related
 
 - [gBizINFO](https://github.com/code4fukui/gBizINFO/)
 
-## 出典
+## Sources
 
 - [EDINET](https://disclosure2dl.edinet-fsa.go.jp/guide/static/disclosure/WZEK0110.html)
-- [EDINETタクソノミ及びコードリストダウンロード](https://disclosure2.edinet-fsa.go.jp/weee0010.aspx)
-- [東証上場銘柄一覧（2023年10月末） - その他統計資料 | 日本取引所グループ](https://www.jpx.co.jp/markets/statistics-equities/misc/01.html)
+- [EDINET taxonomy and code list download](https://disclosure2.edinet-fsa.go.jp/weee0010.aspx)
+- [List of TSE-listed issues (as of the end of October 2023) - Other Statistical Data | Japan Exchange Group](https://www.jpx.co.jp/markets/statistics-equities/misc/01.html)
 
-## update
+## Update
 
-### 上場企業一覧
+### Listed Company List
 
 ```sh
 deno run -A download-dataj.js
@@ -32,6 +36,6 @@ deno run -A make-listedcompany.js
 → update data/listed_company.csv
 → update data/seccode_append.csv
 
-## todo
+## Todo
 
-- EDINETcodeに法人番号未記載のものの修正
+- Fix EDINET codes without corporate number
