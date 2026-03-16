@@ -37,3 +37,7 @@ deno run -A make-listedcompany.js
 ## TODO
 
 - EDINETコードに企業番号がないものを修正する
+
+## ライセンス
+
+MIT License — see [LICENSE](LICENSE).

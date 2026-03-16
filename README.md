@@ -39,3 +39,7 @@ deno run -A make-listedcompany.js
 ## Todo
 
 - Fix EDINET codes without corporate number
+
+## License
+
+MIT License — see [LICENSE](LICENSE).
